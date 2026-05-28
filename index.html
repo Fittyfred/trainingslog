@@ -16,26 +16,35 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
 .date-row input[type=date] { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #1a1a1a; -webkit-appearance: none; }
 .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #999; margin: 1.25rem 0 0.5rem; }
 .exercise-card { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 10px; }
-.ex-name { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 5px; }
+.ex-name-input { font-size: 14px; font-weight: 600; color: #1a1a1a; border: none; border-bottom: 1.5px dashed #ddd; background: transparent; width: 100%; margin-bottom: 4px; padding: 2px 0; outline: none; }
+.ex-name-input:focus { border-bottom-color: #1a1a1a; }
 .ex-note { font-size: 12px; color: #777; margin-bottom: 10px; line-height: 1.5; }
-.fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.field label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; }
-.field input { width: 100%; padding: 9px 10px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; color: #1a1a1a; -webkit-appearance: none; }
-.field input:focus { outline: none; border-color: #1a1a1a; background: #fff; }
-.prev { font-size: 11px; color: #aaa; margin-top: 7px; text-align: right; }
-.prev span { color: #666; }
+.sets-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.sets-row label { font-size: 12px; color: #888; white-space: nowrap; }
+.sets-row input { width: 52px; padding: 7px 8px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; color: #1a1a1a; text-align: center; -webkit-appearance: none; }
+.sets-row button { padding: 7px 12px; font-size: 13px; border: 1px solid #ddd; border-radius: 8px; background: #f0f0f0; color: #1a1a1a; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.set-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+.set-table thead th { font-size: 11px; color: #999; font-weight: 500; padding: 0 4px 6px; text-align: center; }
+.set-table thead th:first-child { text-align: left; width: 36px; }
+.set-table tbody td { padding: 3px 4px; }
+.set-table tbody td:first-child { font-size: 12px; color: #aaa; text-align: left; vertical-align: middle; padding-top: 6px; }
+.set-table input { width: 100%; padding: 8px 6px; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; color: #1a1a1a; text-align: center; -webkit-appearance: none; }
+.set-table input:focus { outline: none; border-color: #1a1a1a; background: #fff; }
+.prev-block { font-size: 11px; color: #aaa; margin-top: 8px; line-height: 1.7; }
+.prev-block strong { color: #888; font-weight: 500; }
 .finisher-card { background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 10px; }
 .finisher-card .ex-name { font-size: 13px; color: #666; font-weight: 400; }
 .save-btn { width: 100%; margin-top: 1.5rem; margin-bottom: 2rem; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 14px; background: #1a1a1a; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .save-btn:active { opacity: 0.75; }
 .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 11px 22px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; z-index: 99; }
 .toast.show { opacity: 1; }
+.edit-hint { font-size: 11px; color: #bbb; margin-bottom: 12px; }
 </style>
 </head>
 <body>
 
 <h1>Trainingslog</h1>
-<p class="subtitle">Gewicht · sets · reps bijhouden per sessie</p>
+<p class="subtitle">Gewicht & reps per set bijhouden</p>
 
 <div class="day-tabs">
   <button class="tab active" onclick="switchDay('A')">Dag A</button>
@@ -49,7 +58,6 @@ h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
 
 <div id="exercise-list"></div>
 <button class="save-btn" onclick="saveSession()">Sessie opslaan</button>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -57,17 +65,17 @@ var schema = {
   A: {
     sections: [
       { label: "Benen & billen", exercises: [
-        { id: "slp", name: "Single leg press", note: "3 × 8–10 p. been · Één been tegelijk, voet midden op platform" },
-        { id: "hip_a", name: "Hip thrust", note: "3 × 8–10 · Rug op bankje, bekken neutraal aan de top" },
-        { id: "llc", name: "Lying leg curl", note: "3 × 12–15 · Hamstrings, volledige rugontlasting" }
+        { id: "slp", name: "Single leg press", note: "3 × 8–10 p. been · Één been tegelijk, voet midden op platform", defaultSets: 3 },
+        { id: "hip_a", name: "Hip thrust", note: "3 × 8–10 · Rug op bankje, bekken neutraal aan de top", defaultSets: 3 },
+        { id: "llc", name: "Lying leg curl", note: "3 × 12–15 · Hamstrings, volledige rugontlasting", defaultSets: 3 }
       ]},
       { label: "Bovenlichaam", exercises: [
-        { id: "row_a", name: "Seated machine row", note: "3 × 8–10 · Schouderbladen samentrekken aan het einde" },
-        { id: "sp_a", name: "Dumbbell shoulder press (zittend)", note: "3 × 8–10 · Zittend voor stabielere rugpositie" }
+        { id: "row_a", name: "Seated machine row", note: "3 × 8–10 · Schouderbladen samentrekken aan het einde", defaultSets: 3 },
+        { id: "sp_a", name: "Dumbbell shoulder press (zittend)", note: "3 × 8–10 · Zittend voor stabielere rugpositie", defaultSets: 3 }
       ]},
       { label: "Armen", exercises: [
-        { id: "curl_a", name: "Dumbbell bicep curl (zittend)", note: "3 × 12 · Ellebogen gefixeerd, gecontroleerd neer" },
-        { id: "incline_curl", name: "Incline dumbbell curl ✦", note: "3 × 12 · Optioneel · Bank op 45–60°" }
+        { id: "curl_a", name: "Dumbbell bicep curl (zittend)", note: "3 × 12 · Ellebogen gefixeerd, gecontroleerd neer", defaultSets: 3 },
+        { id: "incline_curl", name: "Incline dumbbell curl ✦", note: "3 × 12 · Optioneel · Bank op 45–60°", defaultSets: 3 }
       ]}
     ],
     finisher: null
@@ -75,16 +83,16 @@ var schema = {
   B: {
     sections: [
       { label: "Benen & billen", exercises: [
-        { id: "lp_b", name: "Leg press (voeten hoog & breed)", note: "3 × 8–10 · Hoge glute- en hamstringactivatie" },
-        { id: "abd", name: "Hip abductie + adductie (superset)", note: "3 × 12–15 p. oef. · Direct achter elkaar" }
+        { id: "lp_b", name: "Goblet squat", note: "3 × 8–10 · Hoge glute- en quadactivatie", defaultSets: 3 },
+        { id: "abd", name: "Hip abductie + adductie (superset)", note: "3 × 12–15 p. oef. · Direct achter elkaar", defaultSets: 3 }
       ]},
       { label: "Bovenlichaam", exercises: [
-        { id: "inc_press", name: "Incline dumbbell press (30–45°)", note: "3 × 8–10 · Schoudervriendelijker dan vlak bankje" },
-        { id: "fly_b", name: "Chest fly machine", note: "3 × 12–15 · Gecontroleerde stretch" }
+        { id: "inc_press", name: "Incline dumbbell press (30–45°)", note: "3 × 8–10 · Schoudervriendelijker dan vlak bankje", defaultSets: 3 },
+        { id: "fly_b", name: "Chest fly machine", note: "3 × 12–15 · Gecontroleerde stretch", defaultSets: 3 }
       ]},
       { label: "Armen", exercises: [
-        { id: "tri_b", name: "Tricep pushdown (machine of touw)", note: "3 × 12 · Ellebogen gefixeerd" },
-        { id: "legext_b", name: "Leg extension machine ✦", note: "3 × 12–15 · Optioneel · Licht gewicht, gecontroleerd" }
+        { id: "tri_b", name: "Tricep pushdown (machine of touw)", note: "3 × 12 · Ellebogen gefixeerd", defaultSets: 3 },
+        { id: "legext_b", name: "Leg extension machine ✦", note: "3 × 12–15 · Optioneel · Licht gewicht, gecontroleerd", defaultSets: 3 }
       ]}
     ],
     finisher: null
@@ -92,16 +100,16 @@ var schema = {
   C: {
     sections: [
       { label: "Benen & billen", exercises: [
-        { id: "bss", name: "Bulgarian split squat", note: "3 × 8–10 p. been · Eerste 2 weken zonder gewicht" },
-        { id: "slc", name: "Seated leg curl", note: "3 × 12–15 · Zwaarder dan lying leg curl dag A" },
-        { id: "super_c", name: "Leg extension + calf raise (superset)", note: "3 × superset · 12 leg ext. direct gevolgd door 15 calf raise" }
+        { id: "bss", name: "Bulgarian split squat", note: "3 × 8–10 p. been · Eerste 2 weken zonder gewicht", defaultSets: 3 },
+        { id: "slc", name: "Seated leg curl", note: "3 × 12–15 · Zwaarder dan lying leg curl dag A", defaultSets: 3 },
+        { id: "super_c", name: "Leg extension + calf raise (superset)", note: "3 × superset · 12 leg ext. direct gevolgd door 15 calf raise", defaultSets: 3 }
       ]},
       { label: "Bovenlichaam", exercises: [
-        { id: "pull_c", name: "Lat pulldown (smalle neutrale greep)", note: "3 × 8–10 · V-stang, groter bewegingsbereik" },
-        { id: "lat_c", name: "Dumbbell lateral raise", note: "3 × 12–15 · Zittend, armen tot schouderhoogte" }
+        { id: "pull_c", name: "Lat pulldown (smalle neutrale greep)", note: "3 × 8–10 · V-stang, groter bewegingsbereik", defaultSets: 3 },
+        { id: "lat_c", name: "Dumbbell lateral raise", note: "3 × 12–15 · Zittend, armen tot schouderhoogte", defaultSets: 3 }
       ]},
       { label: "Armen", exercises: [
-        { id: "super_arm", name: "Bicep curl + tricep pushdown (superset)", note: "3 × 12 p. oef. · Direct achter elkaar" }
+        { id: "super_arm", name: "Bicep curl + tricep pushdown (superset)", note: "3 × 12 p. oef. · Direct achter elkaar", defaultSets: 3 }
       ]}
     ],
     finisher: { name: "Sled push · 3–4 × 25 m · 60–90 sec rust · Eerste 2 weken zonder extra gewicht" }
@@ -109,23 +117,39 @@ var schema = {
 };
 
 var currentDay = 'A';
+var setCount = {};
+var customNames = {};
+
+function nameKey(day, id) { return 'name_' + day + '_' + id; }
+
+function getCustomName(day, id, defaultName) {
+  if (customNames[day + '_' + id] !== undefined) return customNames[day + '_' + id];
+  try {
+    var stored = localStorage.getItem(nameKey(day, id));
+    if (stored) { customNames[day + '_' + id] = stored; return stored; }
+  } catch(e) {}
+  return defaultName;
+}
+
+function saveName(day, id, val) {
+  customNames[day + '_' + id] = val;
+  try { localStorage.setItem(nameKey(day, id), val); } catch(e) {}
+}
 
 function switchDay(day) {
   currentDay = day;
   var tabs = document.querySelectorAll('.tab');
   var days = ['A','B','C'];
-  for (var i = 0; i < tabs.length; i++) {
-    tabs[i].classList.toggle('active', days[i] === day);
-  }
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', days[i] === day);
   render();
 }
 
-function storageKey(day, id, date) { return 'tr_' + day + '_' + id + '_' + date; }
+function storageKey(day, id, date) { return 'tr2_' + day + '_' + id + '_' + date; }
 
 function getPrev(day, id, date) {
-  var dates = [];
   try {
-    var prefix = 'tr_' + day + '_' + id + '_';
+    var prefix = 'tr2_' + day + '_' + id + '_';
+    var dates = [];
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
       if (k && k.indexOf(prefix) === 0) {
@@ -133,11 +157,9 @@ function getPrev(day, id, date) {
         if (d < date) dates.push(d);
       }
     }
-  } catch(e) { return null; }
-  if (!dates.length) return null;
-  dates.sort();
-  try {
-    var raw = localStorage.getItem('tr_' + day + '_' + id + '_' + dates[dates.length - 1]);
+    if (!dates.length) return null;
+    dates.sort();
+    var raw = localStorage.getItem(prefix + dates[dates.length - 1]);
     return raw ? JSON.parse(raw) : null;
   } catch(e) { return null; }
 }
@@ -150,10 +172,25 @@ function getSaved(day, id, date) {
   } catch(e) { return null; }
 }
 
+function getSetCount(exId, defaultSets, saved) {
+  if (setCount[exId] !== undefined) return setCount[exId];
+  if (saved && saved.sets) return saved.sets.length;
+  return defaultSets;
+}
+
+function updateSets(exId, delta, defaultSets) {
+  var date = document.getElementById('session-date').value;
+  var saved = getSaved(currentDay, exId, date);
+  var current = getSetCount(exId, defaultSets, saved);
+  setCount[exId] = Math.max(1, current + delta);
+  render();
+}
+
 function render() {
   var date = document.getElementById('session-date').value;
   var day = schema[currentDay];
-  var html = '';
+  var html = '<p class="edit-hint">✏️ Tik op een oefenaam om deze te wijzigen</p>';
+
   for (var s = 0; s < day.sections.length; s++) {
     var sec = day.sections[s];
     html += '<div class="section-label">' + sec.label + '</div>';
@@ -161,23 +198,52 @@ function render() {
       var ex = sec.exercises[e];
       var saved = getSaved(currentDay, ex.id, date);
       var prev = date ? getPrev(currentDay, ex.id, date) : null;
+      var numSets = getSetCount(ex.id, ex.defaultSets, saved);
+      var displayName = getCustomName(currentDay, ex.id, ex.name);
+
       html += '<div class="exercise-card">';
-      html += '<div class="ex-name">' + ex.name + '</div>';
+      html += '<input class="ex-name-input" type="text" value="' + escHtml(displayName) + '" id="name_' + ex.id + '" onchange="saveName(\'' + currentDay + '\', \'' + ex.id + '\', this.value)" placeholder="Naam oefening">';
       if (ex.note) html += '<div class="ex-note">' + ex.note + '</div>';
-      html += '<div class="fields">';
-      html += '<div class="field"><label>Gewicht (kg)</label><input type="number" step="0.5" min="0" inputmode="decimal" placeholder="—" id="w_' + ex.id + '" value="' + (saved ? saved.w : '') + '"></div>';
-      html += '<div class="field"><label>Sets</label><input type="number" min="1" inputmode="numeric" placeholder="3" id="s_' + ex.id + '" value="' + (saved ? saved.s : '') + '"></div>';
-      html += '<div class="field"><label>Reps</label><input type="number" min="1" inputmode="numeric" placeholder="10" id="r_' + ex.id + '" value="' + (saved ? saved.r : '') + '"></div>';
+
+      html += '<div class="sets-row">';
+      html += '<label>Aantal sets:</label>';
+      html += '<button onclick="updateSets(\'' + ex.id + '\', -1, ' + ex.defaultSets + ')">−</button>';
+      html += '<input type="number" min="1" value="' + numSets + '" inputmode="numeric" onchange="setCount[\'' + ex.id + '\']=parseInt(this.value)||1; render();" style="width:52px;padding:7px 8px;font-size:15px;border:1px solid #ddd;border-radius:8px;background:#fafafa;text-align:center;-webkit-appearance:none;">';
+      html += '<button onclick="updateSets(\'' + ex.id + '\', 1, ' + ex.defaultSets + ')">+</button>';
       html += '</div>';
-      if (prev) html += '<div class="prev">Vorige: <span>' + (prev.w||0) + ' kg · ' + (prev.s||0) + ' sets · ' + (prev.r||0) + ' reps</span></div>';
+
+      html += '<table class="set-table"><thead><tr><th>Set</th><th>Gewicht (kg)</th><th>Reps</th></tr></thead><tbody>';
+      for (var i = 0; i < numSets; i++) {
+        var sw = saved && saved.sets && saved.sets[i] ? saved.sets[i].w : '';
+        var sr = saved && saved.sets && saved.sets[i] ? saved.sets[i].r : '';
+        html += '<tr><td>' + (i+1) + '</td>';
+        html += '<td><input type="number" step="0.5" min="0" inputmode="decimal" placeholder="—" id="w_' + ex.id + '_' + i + '" value="' + sw + '"></td>';
+        html += '<td><input type="number" min="1" inputmode="numeric" placeholder="—" id="r_' + ex.id + '_' + i + '" value="' + sr + '"></td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+
+      if (prev && prev.sets && prev.sets.length) {
+        html += '<div class="prev-block"><strong>Vorige sessie:</strong><br>';
+        for (var p = 0; p < prev.sets.length; p++) {
+          html += 'Set ' + (p+1) + ': ' + (prev.sets[p].w||0) + ' kg · ' + (prev.sets[p].r||0) + ' reps<br>';
+        }
+        html += '</div>';
+      }
       html += '</div>';
     }
   }
+
   if (day.finisher) {
     html += '<div class="section-label">Finisher</div>';
     html += '<div class="finisher-card"><div class="ex-name">' + day.finisher.name + '</div></div>';
   }
+
   document.getElementById('exercise-list').innerHTML = html;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function saveSession() {
@@ -188,14 +254,19 @@ function saveSession() {
     var sec = day.sections[s];
     for (var e = 0; e < sec.exercises.length; e++) {
       var ex = sec.exercises[e];
-      var wEl = document.getElementById('w_' + ex.id);
-      var sEl = document.getElementById('s_' + ex.id);
-      var rEl = document.getElementById('r_' + ex.id);
-      var w = wEl ? wEl.value : '';
-      var sv = sEl ? sEl.value : '';
-      var r = rEl ? rEl.value : '';
-      if (w || sv || r) {
-        try { localStorage.setItem(storageKey(currentDay, ex.id, date), JSON.stringify({ w: w||0, s: sv||0, r: r||0 })); } catch(e) {}
+      var numSets = getSetCount(ex.id, ex.defaultSets, getSaved(currentDay, ex.id, date));
+      var sets = [];
+      var hasData = false;
+      for (var i = 0; i < numSets; i++) {
+        var wEl = document.getElementById('w_' + ex.id + '_' + i);
+        var rEl = document.getElementById('r_' + ex.id + '_' + i);
+        var w = wEl ? wEl.value : '';
+        var r = rEl ? rEl.value : '';
+        sets.push({ w: w||0, r: r||0 });
+        if (w || r) hasData = true;
+      }
+      if (hasData) {
+        try { localStorage.setItem(storageKey(currentDay, ex.id, date), JSON.stringify({ sets: sets })); } catch(e) {}
       }
     }
   }
@@ -219,7 +290,7 @@ function getToday() {
 
 window.onload = function() {
   document.getElementById('session-date').value = getToday();
-  document.getElementById('session-date').addEventListener('change', render);
+  document.getElementById('session-date').addEventListener('change', function() { setCount = {}; render(); });
   render();
 };
 </script>
